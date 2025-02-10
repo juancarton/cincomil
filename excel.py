@@ -1,33 +1,38 @@
 import streamlit as st
 import pandas as pd
 
-# Título de la app
-st.title('Resultados de Enero - Comparativa entre dos Clubes')
+# Definir la contraseña
+PASSWORD = "Ileana"  # Cambia esto por tu contraseña
 
-# Cargar archivo de Excel
-uploaded_file = st.file_uploader("Sube tu archivo Excel", type=["xlsx"])
+# Widget para ingresar la contraseña
+password_input = st.text_input("Ingresa la contraseña:", type="password")
 
-if uploaded_file:
-    df = pd.read_excel(uploaded_file)
+if password_input == PASSWORD:
+    st.success("Acceso concedido ✅")
 
-    # Mostrar el DataFrame original
-    st.subheader("Datos cargados:")
-    st.dataframe(df)
+    # Cargar archivo fijo
+    try:
+        df = pd.read_excel("resultado1.xlsx")  # Asegúrate de que el archivo esté en la misma carpeta
+        st.subheader("Datos cargados:")
+        st.dataframe(df)
 
-    # Seleccionar columna para filtrar
-    columnas = df.columns.tolist()
-    columna_filtro = st.selectbox("Selecciona una columna para filtrar", columnas)
+        # Seleccionar columna para filtrar
+        columnas = df.columns.tolist()
+        columna_filtro = st.selectbox("Selecciona una columna para filtrar", columnas)
 
-    # Obtener valores únicos de la columna seleccionada
-    valores_unicos = df[columna_filtro].unique()
-    valor_seleccionado = st.multiselect("Selecciona valores", valores_unicos)
+        # Obtener valores únicos de la columna seleccionada
+        valores_unicos = df[columna_filtro].unique()
+        valor_seleccionado = st.multiselect("Selecciona valores", valores_unicos)
 
-    # Aplicar filtro si el usuario selecciona valores
-    if valor_seleccionado:
-        df_filtrado = df[df[columna_filtro].isin(valor_seleccionado)]
-    else:
-        df_filtrado = df  # Mostrar todo si no hay filtro
+        # Aplicar filtro si el usuario selecciona valores
+        df_filtrado = df[df[columna_filtro].isin(valor_seleccionado)] if valor_seleccionado else df
 
-    # Mostrar DataFrame filtrado
-    st.subheader("Datos filtrados:")
-    st.dataframe(df_filtrado)
+        # Mostrar DataFrame filtrado
+        st.subheader("Datos filtrados:")
+        st.dataframe(df_filtrado)
+
+    except FileNotFoundError:
+        st.error("Error: No se encontró el archivo 'resultado1.xlsx'. Asegúrate de que esté en la misma carpeta.")
+
+elif password_input:
+    st.error("Contraseña incorrecta ❌")
