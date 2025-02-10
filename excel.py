@@ -8,7 +8,7 @@ st.title('Resultados de Enero - Comparativa entre dos Clubes')
 uploaded_file = st.file_uploader("Sube tu archivo Excel", type=["xlsx"])
 
 if uploaded_file:
-    df = pd.read_excel("resultado1.xlsx")
+    df = pd.read_excel(uploaded_file)
 
     # Mostrar el DataFrame original
     st.subheader("Datos cargados:")
