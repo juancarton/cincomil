@@ -1,38 +1,61 @@
 import streamlit as st
 import pandas as pd
+import plotly.express as px
 
-# Definir la contraseña
-PASSWORD = "Ileana"  # Cambia esto por tu contraseña
+# Configuración de la página
+st.set_page_config(page_title="Comparativa entre el Club Kabah y su Club Espejo", layout="wide")
+st.title("📊 Comparativa entre el Club Kabah y su Club Espejo")
 
-# Widget para ingresar la contraseña
-password_input = st.text_input("Ingresa la contraseña:", type="password")
+# Autenticación con contraseña
+PASSWORD = "Ileana"  # Cambiar por la contraseña deseada
+password_input = st.text_input("🔒 Ingresa la contraseña:", type="password")
 
 if password_input == PASSWORD:
-    st.success("Acceso concedido ✅")
+    # Cargar archivo Excel
+    uploaded_file = st.file_uploader("Sube un archivo Excel con los datos", type=["xlsx"])
 
-    # Cargar archivo fijo
-    try:
-        df = pd.read_excel("resultado1.xlsx")  # Asegúrate de que el archivo esté en la misma carpeta
-        st.subheader("Datos cargados:")
-        st.dataframe(df)
-
-        # Seleccionar columna para filtrar
-        columnas = df.columns.tolist()
-        columna_filtro = st.selectbox("Selecciona una columna para filtrar", columnas)
-
-        # Obtener valores únicos de la columna seleccionada
-        valores_unicos = df[columna_filtro].unique()
-        valor_seleccionado = st.multiselect("Selecciona valores", valores_unicos)
-
-        # Aplicar filtro si el usuario selecciona valores
-        df_filtrado = df[df[columna_filtro].isin(valor_seleccionado)] if valor_seleccionado else df
-
-        # Mostrar DataFrame filtrado
-        st.subheader("Datos filtrados:")
-        st.dataframe(df_filtrado)
-
-    except FileNotFoundError:
-        st.error("Error: No se encontró el archivo 'resultado1.xlsx'. Asegúrate de que esté en la misma carpeta.")
-
-elif password_input:
-    st.error("Contraseña incorrecta ❌")
+    if uploaded_file:
+        df = pd.read_excel(uploaded_file, sheet_name="Hoja1")
+        
+        # Asegurar que las columnas necesarias estén presentes
+        required_columns = ["FECHA", "DIA", "CLUB", "VENTA", "PLAN", "DEC/CREC", "ALCANCE", "TRANSACCIONES"]
+        if all(col in df.columns for col in required_columns):
+            
+            # Convertir fecha a datetime para filtros
+            df["FECHA"] = pd.to_datetime(df["FECHA"])
+            
+            # Filtros de fecha y día
+            st.sidebar.header("📅 Filtros")
+            fecha_min, fecha_max = df["FECHA"].min(), df["FECHA"].max()
+            fecha_seleccionada = st.sidebar.date_input("Selecciona un rango de fechas", [fecha_min, fecha_max], fecha_min, fecha_max)
+            dias_seleccionados = st.sidebar.multiselect("Selecciona días de la semana", df["DIA"].unique(), df["DIA"].unique())
+            
+            df_filtrado = df[(df["FECHA"] >= pd.to_datetime(fecha_seleccionada[0])) & (df["FECHA"] <= pd.to_datetime(fecha_seleccionada[1])) & df["DIA"].isin(dias_seleccionados)]
+            
+            # Mostrar la tabla con estilos
+            st.subheader("📋 Datos de Ventas y Transacciones")
+            st.dataframe(df_filtrado.style.format({"VENTA": "${:,.2f}", "TRANSACCIONES": "{:,}", "PLAN": "${:,.2f}", "DEC/CREC": "{:.1f}%", "ALCANCE": "{:.2f}"}))
+            
+            # Gráficos
+            st.subheader("📊 Comparación de Ventas")
+            fig_ventas = px.bar(df_filtrado, x="CLUB", y="VENTA", color="CLUB", text_auto=True,
+                                title="Comparación de Ventas entre Tiendas")
+            st.plotly_chart(fig_ventas, use_container_width=True)
+            
+            st.subheader("📈 Comparación de Transacciones")
+            fig_transacciones = px.bar(df_filtrado, x="CLUB", y="TRANSACCIONES", color="CLUB", text_auto=True,
+                                       title="Comparación de Transacciones entre Tiendas")
+            st.plotly_chart(fig_transacciones, use_container_width=True)
+            
+            # Relación Ventas/Transacciones
+            df_filtrado["Ventas por Transacción"] = df_filtrado["VENTA"] / df_filtrado["TRANSACCIONES"]
+            st.subheader("💰 Promedio de Ventas por Transacción")
+            fig_ratio = px.bar(df_filtrado, x="CLUB", y="Ventas por Transacción", color="CLUB", text_auto=True,
+                               title="Promedio de Ventas por Transacción")
+            st.plotly_chart(fig_ratio, use_container_width=True)
+        else:
+            st.error(f"El archivo debe contener las columnas: {', '.join(required_columns)}")
+    else:
+        st.info("📂 Sube un archivo Excel para comenzar")
+else:
+    st.error("🔑 Contraseña incorrecta. Intenta de nuevo.")
