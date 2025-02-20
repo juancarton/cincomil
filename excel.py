@@ -57,7 +57,7 @@ except Exception as e:
 st.sidebar.header("📅 Filtros")
 fecha_min, fecha_max = df_resultado1["FECHA"].min(), df_resultado1["FECHA"].max()
 fecha_seleccionada = st.sidebar.date_input("Selecciona un rango de fechas", [fecha_min, fecha_max], fecha_min, fecha_max)
-dias_seleccionados = st.sidebar.multiselect("Selecciona días de la semana", df_resultado1["DIA"].unique(), df_resultado1["DIA"].unique())
+dias_seleccionados = st.sidebar.multiselect("Selecciona días de la semana", df_resultado1["DIA"].unique())
 categorias_seleccionadas = st.sidebar.multiselect("Selecciona Categorías", df_categorias["Categoria"].unique())
 
 # Filtrar datos según selección
@@ -72,7 +72,7 @@ tab1, tab2 = st.tabs(["📊 Ventas", "📋 Categorías"])
 
 with tab1:
     st.subheader("📊 Comparación General de Ventas")
-    st.dataframe(df_resultado1)
+    st.dataframe(df_filtrado)
     fig, ax = plt.subplots(figsize=(6, 4))
     sns.barplot(data=df_filtrado, x="CLUB", y="VENTA", palette="viridis", ax=ax)
     ax.set_title("Comparación de Ventas entre Tiendas")
@@ -81,17 +81,19 @@ with tab1:
 
     # 📈 Comparación de tendencias con línea
     st.subheader("📈 Tendencias de Ventas en el Tiempo")
-    fig, ax = plt.subplots(figsize=(8, 4))
-    sns.lineplot(data=df_filtrado, x="FECHA", y="VENTA", hue="CLUB", marker="o", ax=ax)
+    fig, ax = plt.subplots(figsize=(10, 5))
+    sns.lineplot(data=df_filtrado, x="FECHA", y="VENTA", hue="CLUB", marker="o", linewidth=2.5, ax=ax)
     ax.set_title("Tendencia de Ventas por Día")
+    ax.set_xticks(df_filtrado["FECHA"].index[::max(1, len(df_filtrado) // 10)])
+    ax.set_xticklabels(df_filtrado["FECHA"].dt.strftime('%Y-%m-%d')[::max(1, len(df_filtrado) // 10)], rotation=45, ha="right")
     st.pyplot(fig)
 
 with tab2:
     st.subheader("📋 Tabla de Categorías")
-    st.dataframe(df_categorias)
-
-    # 📊 Comparación de categorías con Seaborn (corregida)
     df_categorias_filtrado = df_categorias[df_categorias["Categoria"].isin(categorias_seleccionadas)]
+    st.dataframe(df_categorias_filtrado)
+
+    # 📊 Comparación de categorías con Seaborn (coordinada con la selección)
     if not df_categorias_filtrado.empty:
         fig, ax = plt.subplots(figsize=(8, 5))
         sns.barplot(data=df_categorias_filtrado, x="CLUB", y="Venta MTD", hue="Categoria", palette="coolwarm", ax=ax)
