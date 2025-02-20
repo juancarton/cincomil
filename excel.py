@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
+import seaborn as sns
+import matplotlib.pyplot as plt
 import requests
 
 # Configuración de la página
@@ -14,10 +15,14 @@ if "authenticated" not in st.session_state:
 
 if not st.session_state["authenticated"]:
     password_input = st.text_input("🔒 Ingresa la contraseña:", type="password")
-    if password_input == PASSWORD:
-        st.session_state["authenticated"] = True
+    if password_input:
+        if password_input == PASSWORD:
+            st.session_state["authenticated"] = True
+            st.experimental_rerun()
+        else:
+            st.error("🔑 Contraseña incorrecta. Intenta de nuevo.")
+            st.stop()
     else:
-        st.error("🔑 Contraseña incorrecta. Intenta de nuevo.")
         st.stop()
 
 # URLs de los archivos en GitHub
@@ -61,23 +66,33 @@ df_filtrado = df_resultado1[
     (df_resultado1["DIA"].isin(dias_seleccionados))
 ]
 
-# 📊 Comparación de ventas con gráfica de barras (siempre visible)
+# 📋 Mostrar tabla de datos
+st.subheader("📋 Datos de Ventas")
+st.dataframe(df_filtrado.style.format({"VENTA": "${:,.2f}"}))
+
+# 📊 Comparación de ventas con Seaborn
 st.subheader("📊 Comparación General de Ventas")
-fig = px.bar(df_filtrado, x="CLUB", y="VENTA", color="CLUB", title="Comparación de Ventas entre Tiendas")
-st.plotly_chart(fig, use_container_width=True)
+fig, ax = plt.subplots(figsize=(8, 5))
+sns.barplot(data=df_filtrado, x="CLUB", y="VENTA", palette="viridis", ax=ax)
+ax.set_title("Comparación de Ventas entre Tiendas")
+st.pyplot(fig)
 
 # 📈 Comparación de tendencias con línea
 st.subheader("📈 Tendencias de Ventas en el Tiempo")
-fig = px.line(df_filtrado, x="FECHA", y="VENTA", color="CLUB", markers=True, title="Tendencia de Ventas por Día")
-st.plotly_chart(fig, use_container_width=True)
+fig, ax = plt.subplots(figsize=(10, 5))
+sns.lineplot(data=df_filtrado, x="FECHA", y="VENTA", hue="CLUB", marker="o", ax=ax)
+ax.set_title("Tendencia de Ventas por Día")
+st.pyplot(fig)
 
 # 📊 Comparación de categorías
 st.subheader("📊 Comparación de Ventas por Categoría")
 categoria_seleccionada = st.sidebar.selectbox("Selecciona una Categoría", df_categorias["Categoria"].unique())
 df_categoria_filtrado = df_categorias[df_categorias["Categoria"] == categoria_seleccionada]
 
-fig = px.bar(df_categoria_filtrado, x="CLUB", y="Venta MTD", color="CLUB", title=f"Venta MTD por Categoría: {categoria_seleccionada}")
-st.plotly_chart(fig, use_container_width=True)
+fig, ax = plt.subplots(figsize=(8, 5))
+sns.barplot(data=df_categoria_filtrado, x="CLUB", y="Venta MTD", palette="coolwarm", ax=ax)
+ax.set_title(f"Venta MTD por Categoría: {categoria_seleccionada}")
+st.pyplot(fig)
 
 # Botón de cierre de sesión
 if st.button("Cerrar Sesión"):
