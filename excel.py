@@ -58,6 +58,7 @@ st.sidebar.header("📅 Filtros")
 fecha_min, fecha_max = df_resultado1["FECHA"].min(), df_resultado1["FECHA"].max()
 fecha_seleccionada = st.sidebar.date_input("Selecciona un rango de fechas", [fecha_min, fecha_max], fecha_min, fecha_max)
 dias_seleccionados = st.sidebar.multiselect("Selecciona días de la semana", df_resultado1["DIA"].unique(), df_resultado1["DIA"].unique())
+categorias_seleccionadas = st.sidebar.multiselect("Selecciona Categorías", df_categorias["Categoria"].unique(), df_categorias["Categoria"].unique())
 
 # Filtrar datos según selección
 df_filtrado = df_resultado1[
@@ -72,29 +73,27 @@ st.dataframe(df_filtrado.style.format({"VENTA": "${:,.2f}"}))
 
 # 📊 Comparación de ventas con Seaborn
 st.subheader("📊 Comparación General de Ventas")
-fig, ax = plt.subplots(figsize=(8, 5))
+fig, ax = plt.subplots(figsize=(6, 4))
 sns.barplot(data=df_filtrado, x="CLUB", y="VENTA", palette="viridis", ax=ax)
 ax.set_title("Comparación de Ventas entre Tiendas")
 st.pyplot(fig)
 
 # 📈 Comparación de tendencias con línea
 st.subheader("📈 Tendencias de Ventas en el Tiempo")
-fig, ax = plt.subplots(figsize=(10, 5))
+fig, ax = plt.subplots(figsize=(8, 4))
 sns.lineplot(data=df_filtrado, x="FECHA", y="VENTA", hue="CLUB", marker="o", ax=ax)
 ax.set_title("Tendencia de Ventas por Día")
 st.pyplot(fig)
 
 # 📋 Mostrar tabla de categorías con datos precisos
 st.subheader("📋 Comparación de Ventas por Categoría")
-st.dataframe(df_categorias.style.format({"Venta MTD": "${:,.2f}", "Trans MTD": "{:,}", "Venta YTD": "${:,.2f}", "Trans YTD": "{:,}"}))
+df_categorias_filtrado = df_categorias[df_categorias["Categoria"].isin(categorias_seleccionadas)]
+st.dataframe(df_categorias_filtrado.style.format({"Venta MTD": "${:,.2f}", "Trans MTD": "{:,}", "Venta YTD": "${:,.2f}", "Trans YTD": "{:,}"}))
 
 # 📊 Comparación de categorías con Seaborn
-categoria_seleccionada = st.sidebar.selectbox("Selecciona una Categoría", df_categorias["Categoria"].unique())
-df_categoria_filtrado = df_categorias[df_categorias["Categoria"] == categoria_seleccionada]
-
-fig, ax = plt.subplots(figsize=(8, 5))
-sns.barplot(data=df_categoria_filtrado, x="CLUB", y="Venta MTD", palette="coolwarm", ax=ax)
-ax.set_title(f"Venta MTD por Categoría: {categoria_seleccionada}")
+fig, ax = plt.subplots(figsize=(6, 4))
+sns.barplot(data=df_categorias_filtrado, x="CLUB", y="Venta MTD", hue="Categoria", palette="coolwarm", ax=ax)
+ax.set_title("Comparación de Ventas MTD por Categoría")
 st.pyplot(fig)
 
 # Botón de cierre de sesión
