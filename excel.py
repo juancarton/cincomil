@@ -84,8 +84,11 @@ sns.lineplot(data=df_filtrado, x="FECHA", y="VENTA", hue="CLUB", marker="o", ax=
 ax.set_title("Tendencia de Ventas por Día")
 st.pyplot(fig)
 
-# 📊 Comparación de categorías
-st.subheader("📊 Comparación de Ventas por Categoría")
+# 📋 Mostrar tabla de categorías con datos precisos
+st.subheader("📋 Comparación de Ventas por Categoría")
+st.dataframe(df_categorias.style.format({"Venta MTD": "${:,.2f}", "Trans MTD": "{:,}", "Venta YTD": "${:,.2f}", "Trans YTD": "{:,}"}))
+
+# 📊 Comparación de categorías con Seaborn
 categoria_seleccionada = st.sidebar.selectbox("Selecciona una Categoría", df_categorias["Categoria"].unique())
 df_categoria_filtrado = df_categorias[df_categorias["Categoria"] == categoria_seleccionada]
 
