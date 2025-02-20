@@ -68,32 +68,39 @@ df_filtrado = df_resultado1[
 ]
 
 # 📋 Mostrar tabla de datos
-st.subheader("📋 Datos de Ventas")
-st.dataframe(df_filtrado.style.format({"VENTA": "${:,.2f}"}))
+tab1, tab2, tab3 = st.tabs(["📊 Ventas", "📋 Categorías", "📋 Resultado1"])
 
-# 📊 Comparación de ventas con Seaborn
-st.subheader("📊 Comparación General de Ventas")
-fig, ax = plt.subplots(figsize=(6, 4))
-sns.barplot(data=df_filtrado, x="CLUB", y="VENTA", palette="viridis", ax=ax)
-ax.set_title("Comparación de Ventas entre Tiendas")
-ax.set_xticklabels(ax.get_xticklabels(), rotation=30, fontsize=9)
-st.pyplot(fig)
-
-# 📈 Comparación de tendencias con línea
-st.subheader("📈 Tendencias de Ventas en el Tiempo")
-fig, ax = plt.subplots(figsize=(8, 4))
-sns.lineplot(data=df_filtrado, x="FECHA", y="VENTA", hue="CLUB", marker="o", ax=ax)
-ax.set_title("Tendencia de Ventas por Día")
-st.pyplot(fig)
-
-# 📊 Comparación de categorías con Seaborn (corregida)
-df_categorias_filtrado = df_categorias[df_categorias["Categoria"].isin(categorias_seleccionadas)]
-if not df_categorias_filtrado.empty:
-    fig, ax = plt.subplots(figsize=(8, 5))
-    sns.barplot(data=df_categorias_filtrado, x="CLUB", y="Venta MTD", hue="Categoria", palette="coolwarm", ax=ax)
-    ax.set_title("Comparación de Ventas MTD por Categoría")
+with tab1:
+    st.subheader("📊 Comparación General de Ventas")
+    fig, ax = plt.subplots(figsize=(6, 4))
+    sns.barplot(data=df_filtrado, x="CLUB", y="VENTA", palette="viridis", ax=ax)
+    ax.set_title("Comparación de Ventas entre Tiendas")
     ax.set_xticklabels(ax.get_xticklabels(), rotation=30, fontsize=9)
     st.pyplot(fig)
+
+    # 📈 Comparación de tendencias con línea
+    st.subheader("📈 Tendencias de Ventas en el Tiempo")
+    fig, ax = plt.subplots(figsize=(8, 4))
+    sns.lineplot(data=df_filtrado, x="FECHA", y="VENTA", hue="CLUB", marker="o", ax=ax)
+    ax.set_title("Tendencia de Ventas por Día")
+    st.pyplot(fig)
+
+with tab2:
+    st.subheader("📋 Tabla de Categorías")
+    st.dataframe(df_categorias)
+
+    # 📊 Comparación de categorías con Seaborn (corregida)
+    df_categorias_filtrado = df_categorias[df_categorias["Categoria"].isin(categorias_seleccionadas)]
+    if not df_categorias_filtrado.empty:
+        fig, ax = plt.subplots(figsize=(8, 5))
+        sns.barplot(data=df_categorias_filtrado, x="CLUB", y="Venta MTD", hue="Categoria", palette="coolwarm", ax=ax)
+        ax.set_title("Comparación de Ventas MTD por Categoría")
+        ax.set_xticklabels(ax.get_xticklabels(), rotation=30, fontsize=9)
+        st.pyplot(fig)
+
+with tab3:
+    st.subheader("📋 Tabla de Resultado1")
+    st.dataframe(df_resultado1)
 
 # Botón de cierre de sesión
 if st.button("Cerrar Sesión"):
