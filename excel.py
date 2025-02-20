@@ -14,14 +14,17 @@ password_input = st.text_input("🔒 Ingresa la contraseña:", type="password")
 if password_input == PASSWORD or temp_password:
     st.session_state["authenticated"] = True
     
-    # Cargar datos de los archivos Excel
+    # Cargar datos de los archivos Excel con manejo de errores
     resultado1_path = "/mnt/data/resultado1.xlsx"
     categorias_path = "/mnt/data/categorias.xlsx"
     
-    df_resultado1 = pd.read_excel(resultado1_path, sheet_name="Hoja1")
-    df_categorias = pd.read_excel(categorias_path, sheet_name="Hoja1")
-    
-    df_resultado1["FECHA"] = pd.to_datetime(df_resultado1["FECHA"])
+    try:
+        df_resultado1 = pd.read_excel(resultado1_path, sheet_name="Hoja1", engine='openpyxl')
+        df_categorias = pd.read_excel(categorias_path, sheet_name="Hoja1", engine='openpyxl')
+        df_resultado1["FECHA"] = pd.to_datetime(df_resultado1["FECHA"])
+    except Exception as e:
+        st.error(f"⚠️ Error al cargar los archivos: {e}")
+        st.stop()
     
     # Sidebar con filtros
     st.sidebar.header("📅 Filtros")
