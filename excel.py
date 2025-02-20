@@ -58,7 +58,7 @@ st.sidebar.header("📅 Filtros")
 fecha_min, fecha_max = df_resultado1["FECHA"].min(), df_resultado1["FECHA"].max()
 fecha_seleccionada = st.sidebar.date_input("Selecciona un rango de fechas", [fecha_min, fecha_max], fecha_min, fecha_max)
 dias_seleccionados = st.sidebar.multiselect("Selecciona días de la semana", df_resultado1["DIA"].unique(), df_resultado1["DIA"].unique())
-categorias_seleccionadas = st.sidebar.multiselect("Selecciona Categorías", df_categorias["Categoria"].unique(), df_categorias["Categoria"].unique())
+categorias_seleccionadas = st.sidebar.multiselect("Selecciona Categorías", df_categorias["Categoria"].unique())
 
 # Filtrar datos según selección
 df_filtrado = df_resultado1[
@@ -68,10 +68,11 @@ df_filtrado = df_resultado1[
 ]
 
 # 📋 Mostrar tabla de datos
-tab1, tab2, tab3 = st.tabs(["📊 Ventas", "📋 Categorías", "📋 Resultado1"])
+tab1, tab2 = st.tabs(["📊 Ventas", "📋 Categorías"])
 
 with tab1:
     st.subheader("📊 Comparación General de Ventas")
+    st.dataframe(df_resultado1)
     fig, ax = plt.subplots(figsize=(6, 4))
     sns.barplot(data=df_filtrado, x="CLUB", y="VENTA", palette="viridis", ax=ax)
     ax.set_title("Comparación de Ventas entre Tiendas")
@@ -97,10 +98,6 @@ with tab2:
         ax.set_title("Comparación de Ventas MTD por Categoría")
         ax.set_xticklabels(ax.get_xticklabels(), rotation=30, fontsize=9)
         st.pyplot(fig)
-
-with tab3:
-    st.subheader("📋 Tabla de Resultado1")
-    st.dataframe(df_resultado1)
 
 # Botón de cierre de sesión
 if st.button("Cerrar Sesión"):
