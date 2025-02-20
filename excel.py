@@ -18,7 +18,7 @@ if not st.session_state["authenticated"]:
     if password_input:
         if password_input == PASSWORD:
             st.session_state["authenticated"] = True
-            st.experimental_rerun()
+            st.rerun()
         else:
             st.error("🔑 Contraseña incorrecta. Intenta de nuevo.")
             st.stop()
@@ -97,4 +97,4 @@ st.pyplot(fig)
 # Botón de cierre de sesión
 if st.button("Cerrar Sesión"):
     st.session_state["authenticated"] = False
-    st.experimental_rerun()
+    st.rerun()
