@@ -33,7 +33,12 @@ url_articulos = "https://raw.githubusercontent.com/TU_USUARIO/TU_REPO/main/artic
 def load_excel_from_url(url):
     response = requests.get(url)
     if response.status_code == 200:
-        return pd.read_excel(io.BytesIO(response.content))
+        try:
+            df = pd.read_excel(io.BytesIO(response.content))
+            return df
+        except Exception as e:
+            st.error(f"Error al leer el archivo {url}: {e}")
+            return pd.DataFrame()
     else:
         st.error(f"Error al cargar el archivo: {url}")
         return pd.DataFrame()
@@ -42,6 +47,28 @@ def load_excel_from_url(url):
 resultado1_df = load_excel_from_url(url_resultado1)
 categorias_df = load_excel_from_url(url_categorias)
 articulos_df = load_excel_from_url(url_articulos)
+
+# Verificar que los archivos tienen datos
+if resultado1_df.empty or categorias_df.empty or articulos_df.empty:
+    st.error("No se pudieron cargar correctamente los archivos. Verifica las URLs y el formato de los archivos en GitHub.")
+    st.stop()
+
+# Asegurar que las columnas existen antes de acceder a ellas
+required_columns_resultado = {"FECHA", "CLUB", "VENTA"}
+required_columns_categorias = {"Categoria", "CLUB", "Venta MTD"}
+required_columns_articulos = {"Descripcion", "Club", "Actual"}
+
+if not required_columns_resultado.issubset(resultado1_df.columns):
+    st.error("El archivo resultado1.xlsx no tiene las columnas esperadas. Verifica los nombres en el archivo.")
+    st.stop()
+
+if not required_columns_categorias.issubset(categorias_df.columns):
+    st.error("El archivo categorias.xlsx no tiene las columnas esperadas. Verifica los nombres en el archivo.")
+    st.stop()
+
+if not required_columns_articulos.issubset(articulos_df.columns):
+    st.error("El archivo articulos.xlsx no tiene las columnas esperadas. Verifica los nombres en el archivo.")
+    st.stop()
 
 # Configurar la app
 st.title("📊 Comparación de Tiendas")
