@@ -2,6 +2,14 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
+# Agregar autenticación básica
+PASSWORD = "Ileana"  # Cambia esto por una contraseña segura
+password_input = st.text_input("🔒 Ingresa la contraseña:", type="password")
+
+if password_input != PASSWORD:
+    st.warning("Acceso denegado. Ingresa la contraseña correcta.")
+    st.stop()
+
 # URLs de los archivos en GitHub (reemplázalas con las tuyas)
 url_resultado1 = "https://raw.githubusercontent.com/TU_USUARIO/TU_REPO/main/resultado1.xlsx"
 url_categorias = "https://raw.githubusercontent.com/TU_USUARIO/TU_REPO/main/categorias.xlsx"
