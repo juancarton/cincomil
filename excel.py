@@ -12,7 +12,7 @@ def logout():
     st.session_state.logged_in = False
     st.rerun()
 
-PASSWORD = "1234"  # Cambia esto por una contraseña segura
+PASSWORD = "Ileana"  # Cambia esto por una contraseña segura
 if not st.session_state.logged_in:
     password_input = st.text_input("🔒 Ingresa la contraseña:", type="password")
     if password_input == PASSWORD:
@@ -20,6 +20,8 @@ if not st.session_state.logged_in:
         st.experimental_rerun()
     elif password_input:
         st.warning("Acceso denegado. Ingresa la contraseña correcta.")
+        st.stop()
+    else:
         st.stop()
 
 # Botón de cierre de sesión
