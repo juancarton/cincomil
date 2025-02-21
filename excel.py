@@ -54,6 +54,10 @@ def load_excel_from_url(url):
         st.error(f"Error al cargar el archivo: {url}")
         return pd.DataFrame()
 
+# Si el usuario no está autenticado, no cargar la app
+if not st.session_state.logged_in:
+    st.stop()
+
 # Cargar los datos desde GitHub
 resultado1_df = load_excel_from_url(url_resultado1)
 categorias_df = load_excel_from_url(url_categorias)
