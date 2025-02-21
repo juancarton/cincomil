@@ -1,107 +1,55 @@
 import streamlit as st
 import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
-import requests
+import plotly.express as px
 
-# Configuración de la página
-st.set_page_config(page_title="Comparativa de Ventas", layout="wide")
-st.title("📊 Comparativa de Ventas entre Club Kabah y Club Espejo")
+# URLs de los archivos en GitHub (reemplázalas con las tuyas)
+url_resultado1 = "https://raw.githubusercontent.com/TU_USUARIO/TU_REPO/main/resultado1.xlsx"
+url_categorias = "https://raw.githubusercontent.com/TU_USUARIO/TU_REPO/main/categorias.xlsx"
+url_articulos = "https://raw.githubusercontent.com/TU_USUARIO/TU_REPO/main/articulos.xlsx"
 
-# Autenticación con contraseña
-PASSWORD = "Ileana"
-if "authenticated" not in st.session_state:
-    st.session_state["authenticated"] = False
+# Cargar los datos desde GitHub
+resultado1_df = pd.read_excel(url_resultado1)
+categorias_df = pd.read_excel(url_categorias)
+articulos_df = pd.read_excel(url_articulos)
 
-if not st.session_state["authenticated"]:
-    password_input = st.text_input("🔒 Ingresa la contraseña:", type="password")
-    if password_input:
-        if password_input == PASSWORD:
-            st.session_state["authenticated"] = True
-            st.rerun()
-        else:
-            st.error("🔑 Contraseña incorrecta. Intenta de nuevo.")
-            st.stop()
-    else:
-        st.stop()
+# Configurar la app
+st.title("📊 Comparación de Tiendas")
+st.sidebar.title("Menú de Comparación")
 
-# URLs de los archivos en GitHub
-url_resultado1 = "https://raw.githubusercontent.com/juancarton/cincomil/main/resultado1.xlsx"
-url_categorias = "https://raw.githubusercontent.com/juancarton/cincomil/main/categorias.xlsx"
+opcion = st.sidebar.radio("Selecciona una opción:", [
+    "Comparación de Ventas",
+    "Comparación de Categorías",
+    "Comparación de Artículos"
+])
 
-# Función para descargar archivos
-def descargar_archivo(url, nombre_local):
-    respuesta = requests.get(url)
-    if respuesta.status_code == 200:
-        with open(nombre_local, 'wb') as archivo:
-            archivo.write(respuesta.content)
-        return nombre_local
-    else:
-        st.error(f"Error al descargar {nombre_local}: {respuesta.status_code}")
-        st.stop()
+if opcion == "Comparación de Ventas":
+    st.header("📈 Comparación de Ventas entre Tiendas")
+    tiendas = resultado1_df["CLUB"].unique()
+    tienda1 = st.selectbox("Selecciona la primera tienda:", tiendas)
+    tienda2 = st.selectbox("Selecciona la segunda tienda:", tiendas)
+    
+    df_filtro = resultado1_df[resultado1_df["CLUB"].isin([tienda1, tienda2])]
+    st.write("### Datos Filtrados", df_filtro)
+    
+    fig = px.line(df_filtro, x="FECHA", y="VENTA", color="CLUB", title="Comparación de Ventas")
+    st.plotly_chart(fig)
 
-# Descargar los archivos
-archivo_resultado1 = descargar_archivo(url_resultado1, "resultado1.xlsx")
-archivo_categorias = descargar_archivo(url_categorias, "categorias.xlsx")
+elif opcion == "Comparación de Categorías":
+    st.header("📊 Comparación por Categoría")
+    categorias = categorias_df["Categoria"].unique()
+    categoria = st.selectbox("Selecciona una categoría:", categorias)
+    df_filtro = categorias_df[categorias_df["Categoria"] == categoria]
+    
+    st.write("### Datos Filtrados", df_filtro)
+    fig = px.bar(df_filtro, x="CLUB", y="Venta MTD", color="CLUB", title="Venta por Categoría")
+    st.plotly_chart(fig)
 
-# Cargar los datos de los archivos Excel
-try:
-    df_resultado1 = pd.read_excel(archivo_resultado1, sheet_name="Hoja1", engine='openpyxl')
-    df_categorias = pd.read_excel(archivo_categorias, sheet_name="Hoja1", engine='openpyxl')
-    df_resultado1["FECHA"] = pd.to_datetime(df_resultado1["FECHA"])
-except Exception as e:
-    st.error(f"⚠️ Error al cargar los archivos: {e}")
-    st.stop()
-
-# Sidebar con filtros
-st.sidebar.header("📅 Filtros")
-fecha_min, fecha_max = df_resultado1["FECHA"].min(), df_resultado1["FECHA"].max()
-fecha_seleccionada = st.sidebar.date_input("Selecciona un rango de fechas", [fecha_min, fecha_max], fecha_min, fecha_max)
-dias_seleccionados = st.sidebar.multiselect("Selecciona días de la semana", df_resultado1["DIA"].unique())
-categorias_seleccionadas = st.sidebar.multiselect("Selecciona Categorías", df_categorias["Categoria"].unique())
-
-# Filtrar datos según selección
-df_filtrado = df_resultado1[
-    (df_resultado1["FECHA"] >= pd.to_datetime(fecha_seleccionada[0])) &
-    (df_resultado1["FECHA"] <= pd.to_datetime(fecha_seleccionada[1])) &
-    (df_resultado1["DIA"].isin(dias_seleccionados))
-]
-
-# 📋 Mostrar tabla de datos
-tab1, tab2 = st.tabs(["📊 Ventas", "📋 Categorías"])
-
-with tab1:
-    st.subheader("📊 Comparación General de Ventas")
-    st.dataframe(df_filtrado)
-    fig, ax = plt.subplots(figsize=(6, 4))
-    sns.barplot(data=df_filtrado, x="CLUB", y="VENTA", palette="viridis", ax=ax)
-    ax.set_title("Comparación de Ventas entre Tiendas")
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=30, fontsize=9)
-    st.pyplot(fig)
-
-    # 📈 Comparación de tendencias con línea
-    st.subheader("📈 Tendencias de Ventas en el Tiempo")
-    fig, ax = plt.subplots(figsize=(10, 5))
-    sns.lineplot(data=df_filtrado, x="FECHA", y="VENTA", hue="CLUB", marker="o", linewidth=2.5, ax=ax)
-    ax.set_title("Tendencia de Ventas por Día")
-    ax.set_xticks(df_filtrado["FECHA"].index[::max(1, len(df_filtrado) // 10)])
-    ax.set_xticklabels(df_filtrado["FECHA"].dt.strftime('%Y-%m-%d')[::max(1, len(df_filtrado) // 10)], rotation=45, ha="right")
-    st.pyplot(fig)
-
-with tab2:
-    st.subheader("📋 Tabla de Categorías")
-    df_categorias_filtrado = df_categorias[df_categorias["Categoria"].isin(categorias_seleccionadas)]
-    st.dataframe(df_categorias_filtrado)
-
-    # 📊 Comparación de categorías con Seaborn (coordinada con la selección)
-    if not df_categorias_filtrado.empty:
-        fig, ax = plt.subplots(figsize=(8, 5))
-        sns.barplot(data=df_categorias_filtrado, x="CLUB", y="Venta MTD", hue="Categoria", palette="coolwarm", ax=ax)
-        ax.set_title("Comparación de Ventas MTD por Categoría")
-        ax.set_xticklabels(ax.get_xticklabels(), rotation=30, fontsize=9)
-        st.pyplot(fig)
-
-# Botón de cierre de sesión
-if st.button("Cerrar Sesión"):
-    st.session_state["authenticated"] = False
-    st.rerun()
+elif opcion == "Comparación de Artículos":
+    st.header("🛒 Comparación de Artículos Vendidos")
+    articulos = articulos_df["Descripcion"].unique()
+    articulo = st.selectbox("Selecciona un artículo:", articulos)
+    df_filtro = articulos_df[articulos_df["Descripcion"] == articulo]
+    
+    st.write("### Datos Filtrados", df_filtro)
+    fig = px.bar(df_filtro, x="Club", y="Actual", color="Club", title="Venta por Artículo")
+    st.plotly_chart(fig)
