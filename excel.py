@@ -7,23 +7,36 @@ import io
 # Configuración de autenticación
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
+    st.session_state.password_attempted = False
 
 def logout():
     st.session_state.logged_in = False
+    st.session_state.password_attempted = False
     st.rerun()
 
-PASSWORD = "1234"  # Cambia esto por una contraseña segura
+PASSWORD = "Ileana"  # Cambia esto por una contraseña segura
 if not st.session_state.logged_in:
     password_input = st.text_input("🔒 Ingresa la contraseña:", type="password")
-    if password_input == PASSWORD:
+    if password_input:
+        st.session_state.password_attempted = True
+    if st.session_state.password_attempted and password_input == PASSWORD:
         st.session_state.logged_in = True
-        st.rerun()
-    else:
+        st.experimental_rerun()
+    elif st.session_state.password_attempted:
         st.warning("Acceso denegado. Ingresa la contraseña correcta.")
         st.stop()
 
 # Botón de cierre de sesión
 st.sidebar.button("Cerrar sesión", on_click=logout)
+
+# Ajuste del ancho de la tabla
+st.markdown("""
+    <style>
+        .dataframe { width: 100% !important; }
+        table { width: 100% !important; }
+        th, td { padding: 10px; white-space: nowrap; }
+    </style>
+    """, unsafe_allow_html=True)
 
 # URLs de los archivos en GitHub (REEMPLAZA ESTAS CON LAS CORRECTAS)
 url_resultado1 = "https://raw.githubusercontent.com/juancarton/cincomil/main/resultado1.xlsx"
@@ -53,23 +66,6 @@ if resultado1_df.empty or categorias_df.empty or articulos_df.empty:
     st.error("No se pudieron cargar correctamente los archivos. Verifica las URLs y el formato de los archivos en GitHub.")
     st.stop()
 
-# Asegurar que las columnas existen antes de acceder a ellas
-required_columns_resultado = {"FECHA", "CLUB", "VENTA"}
-required_columns_categorias = {"Categoria", "CLUB", "Venta MTD"}
-required_columns_articulos = {"Descripcion", "Club", "Actual"}
-
-if not required_columns_resultado.issubset(resultado1_df.columns):
-    st.error("El archivo resultado1.xlsx no tiene las columnas esperadas. Verifica los nombres en el archivo.")
-    st.stop()
-
-if not required_columns_categorias.issubset(categorias_df.columns):
-    st.error("El archivo categorias.xlsx no tiene las columnas esperadas. Verifica los nombres en el archivo.")
-    st.stop()
-
-if not required_columns_articulos.issubset(articulos_df.columns):
-    st.error("El archivo articulos.xlsx no tiene las columnas esperadas. Verifica los nombres en el archivo.")
-    st.stop()
-
 # Configurar la app
 st.title("📊 Comparación de Tiendas")
 st.sidebar.title("Menú de Comparación")
@@ -87,7 +83,7 @@ if opcion == "Comparación de Ventas":
     tienda2 = st.selectbox("Selecciona la segunda tienda:", tiendas)
     
     df_filtro = resultado1_df[resultado1_df["CLUB"].isin([tienda1, tienda2])]
-    st.write("### Datos Filtrados", df_filtro)
+    st.dataframe(df_filtro.style.set_properties(**{'white-space': 'nowrap'}))
     
     fig = px.line(df_filtro, x="FECHA", y="VENTA", color="CLUB", title="Comparación de Ventas")
     st.plotly_chart(fig)
@@ -98,7 +94,7 @@ elif opcion == "Comparación de Categorías":
     categoria = st.selectbox("Selecciona una categoría:", categorias)
     df_filtro = categorias_df[categorias_df["Categoria"] == categoria]
     
-    st.write("### Datos Filtrados", df_filtro)
+    st.dataframe(df_filtro.style.set_properties(**{'white-space': 'nowrap'}))
     fig = px.bar(df_filtro, x="CLUB", y="Venta MTD", color="CLUB", title="Venta por Categoría")
     st.plotly_chart(fig)
 
@@ -108,6 +104,6 @@ elif opcion == "Comparación de Artículos":
     articulo = st.selectbox("Selecciona un artículo:", articulos)
     df_filtro = articulos_df[articulos_df["Descripcion"] == articulo]
     
-    st.write("### Datos Filtrados", df_filtro)
+    st.dataframe(df_filtro.style.set_properties(**{'white-space': 'nowrap'}))
     fig = px.bar(df_filtro, x="Club", y="Actual", color="Club", title="Venta por Artículo")
     st.plotly_chart(fig)
