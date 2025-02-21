@@ -26,9 +26,9 @@ if not st.session_state.logged_in:
 st.sidebar.button("Cerrar sesión", on_click=logout)
 
 # URLs de los archivos en GitHub (REEMPLAZA ESTAS CON LAS CORRECTAS)
-url_resultado1 = "https://raw.githubusercontent.com/TU_USUARIO/TU_REPO/main/resultado1.xlsx"
-url_categorias = "https://raw.githubusercontent.com/TU_USUARIO/TU_REPO/main/categorias.xlsx"
-url_articulos = "https://raw.githubusercontent.com/TU_USUARIO/TU_REPO/main/articulos.xlsx"
+url_resultado1 = "https://raw.githubusercontent.com/juancarton/cincomil/main/resultado1.xlsx"
+url_categorias = "https://raw.githubusercontent.com/juancarton/cincomil/main/categorias.xlsx"
+url_articulos = "https://raw.githubusercontent.com/juancarton/cincomil/main/articulos.xlsx"
 
 def load_excel_from_url(url):
     response = requests.get(url)
