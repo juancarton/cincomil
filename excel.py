@@ -7,22 +7,18 @@ import io
 # Configuración de autenticación
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
-    st.session_state.password_attempted = False
 
 def logout():
     st.session_state.logged_in = False
-    st.session_state.password_attempted = False
     st.rerun()
 
-PASSWORD = "Ileana"  # Cambia esto por una contraseña segura
+PASSWORD = "1234"  # Cambia esto por una contraseña segura
 if not st.session_state.logged_in:
     password_input = st.text_input("🔒 Ingresa la contraseña:", type="password")
-    if password_input:
-        st.session_state.password_attempted = True
-    if st.session_state.password_attempted and password_input == PASSWORD:
+    if password_input == PASSWORD:
         st.session_state.logged_in = True
         st.experimental_rerun()
-    elif st.session_state.password_attempted:
+    elif password_input:
         st.warning("Acceso denegado. Ingresa la contraseña correcta.")
         st.stop()
 
