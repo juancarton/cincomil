@@ -17,7 +17,7 @@ if not st.session_state.logged_in:
     password_input = st.text_input("🔒 Ingresa la contraseña:", type="password")
     if password_input == PASSWORD:
         st.session_state.logged_in = True
-        st.experimental_rerun()
+        st.rerun()
     elif password_input:
         st.warning("Acceso denegado. Ingresa la contraseña correcta.")
         st.stop()
@@ -54,7 +54,7 @@ def load_excel_from_url(url):
         st.error(f"Error al cargar el archivo: {url}")
         return pd.DataFrame()
 
-# Si el usuario no está autenticado, no cargar la app
+# Si el usuario no está autenticado, detener la ejecución
 if not st.session_state.logged_in:
     st.stop()
 
