@@ -1,9 +1,11 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import requests
+import io
 
 # Agregar autenticación básica
-PASSWORD = "Ileana"  # Cambia esto por una contraseña segura
+PASSWORD = "1234"  # Cambia esto por una contraseña segura
 password_input = st.text_input("🔒 Ingresa la contraseña:", type="password")
 
 if password_input != PASSWORD:
@@ -15,10 +17,18 @@ url_resultado1 = "https://raw.githubusercontent.com/TU_USUARIO/TU_REPO/main/resu
 url_categorias = "https://raw.githubusercontent.com/TU_USUARIO/TU_REPO/main/categorias.xlsx"
 url_articulos = "https://raw.githubusercontent.com/TU_USUARIO/TU_REPO/main/articulos.xlsx"
 
+def load_excel_from_url(url):
+    response = requests.get(url)
+    if response.status_code == 200:
+        return pd.read_excel(io.BytesIO(response.content))
+    else:
+        st.error(f"Error al cargar el archivo: {url}")
+        return pd.DataFrame()
+
 # Cargar los datos desde GitHub
-resultado1_df = pd.read_excel(url_resultado1)
-categorias_df = pd.read_excel(url_categorias)
-articulos_df = pd.read_excel(url_articulos)
+resultado1_df = load_excel_from_url(url_resultado1)
+categorias_df = load_excel_from_url(url_categorias)
+articulos_df = load_excel_from_url(url_articulos)
 
 # Configurar la app
 st.title("📊 Comparación de Tiendas")
