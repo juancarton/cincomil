@@ -27,14 +27,8 @@ if not st.session_state.logged_in:
 # Botón de cierre de sesión
 st.sidebar.button("Cerrar sesión", on_click=logout)
 
-# Ajuste del ancho de la tabla
-st.markdown("""
-    <style>
-        .dataframe { width: 100% !important; }
-        table { width: 100% !important; }
-        th, td { padding: 10px; white-space: nowrap; }
-    </style>
-    """, unsafe_allow_html=True)
+# Ajustar el ancho de la aplicación
+st.set_page_config(layout="wide")
 
 # URLs de los archivos en GitHub (REEMPLAZA ESTAS CON LAS CORRECTAS)
 url_resultado1 = "https://raw.githubusercontent.com/juancarton/cincomil/main/resultado1.xlsx"
@@ -54,10 +48,6 @@ def load_excel_from_url(url):
         st.error(f"Error al cargar el archivo: {url}")
         return pd.DataFrame()
 
-# Si el usuario no está autenticado, detener la ejecución
-if not st.session_state.logged_in:
-    st.stop()
-
 # Cargar los datos desde GitHub
 resultado1_df = load_excel_from_url(url_resultado1)
 categorias_df = load_excel_from_url(url_categorias)
@@ -67,6 +57,16 @@ articulos_df = load_excel_from_url(url_articulos)
 if resultado1_df.empty or categorias_df.empty or articulos_df.empty:
     st.error("No se pudieron cargar correctamente los archivos. Verifica las URLs y el formato de los archivos en GitHub.")
     st.stop()
+
+# Aplicar formato de pesos y porcentaje
+def format_dataframe(df):
+    if "VENTA" in df.columns:
+        df["VENTA"] = df["VENTA"].apply(lambda x: f"${x:,.2f}")
+    if "PLAN" in df.columns:
+        df["PLAN"] = df["PLAN"].apply(lambda x: f"${x:,.2f}")
+    if "ALCANCE" in df.columns:
+        df["ALCANCE"] = df["ALCANCE"].apply(lambda x: f"{x:.2%}")
+    return df
 
 # Configurar la app
 st.title("📊 Comparación de Tiendas")
@@ -85,10 +85,12 @@ if opcion == "Comparación de Ventas":
     tienda2 = st.selectbox("Selecciona la segunda tienda:", tiendas)
     
     df_filtro = resultado1_df[resultado1_df["CLUB"].isin([tienda1, tienda2])]
-    st.dataframe(df_filtro.style.set_properties(**{'white-space': 'nowrap'}))
+    df_filtro = format_dataframe(df_filtro)
+    
+    st.dataframe(df_filtro, width=1200)
     
     fig = px.line(df_filtro, x="FECHA", y="VENTA", color="CLUB", title="Comparación de Ventas")
-    st.plotly_chart(fig)
+    st.plotly_chart(fig, use_container_width=True)
 
 elif opcion == "Comparación de Categorías":
     st.header("📊 Comparación por Categoría")
@@ -96,9 +98,11 @@ elif opcion == "Comparación de Categorías":
     categoria = st.selectbox("Selecciona una categoría:", categorias)
     df_filtro = categorias_df[categorias_df["Categoria"] == categoria]
     
-    st.dataframe(df_filtro.style.set_properties(**{'white-space': 'nowrap'}))
+    df_filtro = format_dataframe(df_filtro)
+    st.dataframe(df_filtro, width=1200)
+    
     fig = px.bar(df_filtro, x="CLUB", y="Venta MTD", color="CLUB", title="Venta por Categoría")
-    st.plotly_chart(fig)
+    st.plotly_chart(fig, use_container_width=True)
 
 elif opcion == "Comparación de Artículos":
     st.header("🛒 Comparación de Artículos Vendidos")
@@ -106,6 +110,8 @@ elif opcion == "Comparación de Artículos":
     articulo = st.selectbox("Selecciona un artículo:", articulos)
     df_filtro = articulos_df[articulos_df["Descripcion"] == articulo]
     
-    st.dataframe(df_filtro.style.set_properties(**{'white-space': 'nowrap'}))
+    df_filtro = format_dataframe(df_filtro)
+    st.dataframe(df_filtro, width=1200)
+    
     fig = px.bar(df_filtro, x="Club", y="Actual", color="Club", title="Venta por Artículo")
-    st.plotly_chart(fig)
+    st.plotly_chart(fig, use_container_width=True)
