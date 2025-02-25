@@ -79,7 +79,7 @@ opcion = st.sidebar.radio("Selecciona una opción:", [
 ])
 
 if opcion == "Comparación de Ventas":
-    st.header("📈 Comparación de Ventas entre Tiendas")
+    st.header("📈 Comparación de Ventas entre Clubes")
     tiendas = resultado1_df["CLUB"].unique()
     tienda1 = st.selectbox("Selecciona la primera tienda:", tiendas)
     tienda2 = st.selectbox("Selecciona la segunda tienda:", tiendas)
