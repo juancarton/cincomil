@@ -75,11 +75,13 @@ st.sidebar.title("Menú de Comparación")
 opcion = st.sidebar.radio("Selecciona una opción:", [
     "Comparación de Ventas",
     "Comparación de Categorías",
-    "Comparación de Artículos"
+    "Comparación de Artículos",
+    "Comparación por Día de la Semana",
+    "Comparación por Fecha"
 ])
 
 if opcion == "Comparación de Ventas":
-    st.header("📈 Comparación de Ventas entre Clubes")
+    st.header("📈 Comparación de Ventas entre Tiendas")
     tiendas = resultado1_df["CLUB"].unique()
     tienda1 = st.selectbox("Selecciona la primera tienda:", tiendas)
     tienda2 = st.selectbox("Selecciona la segunda tienda:", tiendas)
@@ -92,26 +94,24 @@ if opcion == "Comparación de Ventas":
     fig = px.line(df_filtro, x="FECHA", y="VENTA", color="CLUB", title="Comparación de Ventas")
     st.plotly_chart(fig, use_container_width=True)
 
-elif opcion == "Comparación de Categorías":
-    st.header("📊 Comparación por Categoría")
-    categorias = categorias_df["Categoria"].unique()
-    categoria = st.selectbox("Selecciona una categoría:", categorias)
-    df_filtro = categorias_df[categorias_df["Categoria"] == categoria]
+elif opcion == "Comparación por Día de la Semana":
+    st.header("📅 Comparación por Día de la Semana")
+    resultado1_df["DIA_SEMANA"] = pd.to_datetime(resultado1_df["FECHA"]).dt.day_name()
+    df_agrupado = resultado1_df.groupby(["DIA_SEMANA", "CLUB"])["VENTA"].sum().reset_index()
+    df_agrupado = format_dataframe(df_agrupado)
     
-    df_filtro = format_dataframe(df_filtro)
-    st.dataframe(df_filtro, width=1200)
+    st.dataframe(df_agrupado, width=1200)
     
-    fig = px.bar(df_filtro, x="CLUB", y="Venta MTD", color="CLUB", title="Venta por Categoría")
+    fig = px.line(df_agrupado, x="DIA_SEMANA", y="VENTA", color="CLUB", title="Comparación de Ventas por Día de la Semana")
     st.plotly_chart(fig, use_container_width=True)
 
-elif opcion == "Comparación de Artículos":
-    st.header("🛒 Comparación de Artículos Vendidos")
-    articulos = articulos_df["Descripcion"].unique()
-    articulo = st.selectbox("Selecciona un artículo:", articulos)
-    df_filtro = articulos_df[articulos_df["Descripcion"] == articulo]
-    
+elif opcion == "Comparación por Fecha":
+    st.header("📆 Comparación por Fecha")
+    fecha_seleccionada = st.date_input("Selecciona una fecha:")
+    df_filtro = resultado1_df[pd.to_datetime(resultado1_df["FECHA"]) == fecha_seleccionada]
     df_filtro = format_dataframe(df_filtro)
+    
     st.dataframe(df_filtro, width=1200)
     
-    fig = px.bar(df_filtro, x="Club", y="Actual", color="Club", title="Venta por Artículo")
+    fig = px.line(df_filtro, x="CLUB", y="VENTA", color="CLUB", title=f"Comparación de Ventas para {fecha_seleccionada}")
     st.plotly_chart(fig, use_container_width=True)
