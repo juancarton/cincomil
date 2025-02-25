@@ -97,12 +97,13 @@ if opcion == "Comparación de Ventas":
 elif opcion == "Comparación por Día de la Semana":
     st.header("📅 Comparación por Día de la Semana")
     resultado1_df["DIA_SEMANA"] = pd.to_datetime(resultado1_df["FECHA"]).dt.day_name()
-    df_agrupado = resultado1_df.groupby(["DIA_SEMANA", "CLUB"])["VENTA"].sum().reset_index()
-    df_agrupado = format_dataframe(df_agrupado)
+    dia_seleccionado = st.selectbox("Selecciona el día de la semana:", resultado1_df["DIA_SEMANA"].unique())
+    df_filtro = resultado1_df[resultado1_df["DIA_SEMANA"] == dia_seleccionado]
+    df_filtro = format_dataframe(df_filtro)
     
-    st.dataframe(df_agrupado, width=1200)
+    st.dataframe(df_filtro, width=1200)
     
-    fig = px.line(df_agrupado, x="DIA_SEMANA", y="VENTA", color="CLUB", title="Comparación de Ventas por Día de la Semana")
+    fig = px.line(df_filtro, x="CLUB", y="VENTA", color="CLUB", title=f"Comparación de Ventas para {dia_seleccionado}")
     st.plotly_chart(fig, use_container_width=True)
 
 elif opcion == "Comparación por Fecha":
