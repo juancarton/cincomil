@@ -4,6 +4,9 @@ import plotly.express as px
 import requests
 import io
 
+# ⚠️ Mover esta línea aquí
+st.set_page_config(layout="wide")
+
 # Configuración de autenticación
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
@@ -26,9 +29,6 @@ if not st.session_state.logged_in:
 
 # Botón de cierre de sesión
 st.sidebar.button("Cerrar sesión", on_click=logout)
-
-# Ajustar el ancho de la aplicación
-st.set_page_config(layout="wide")
 
 # URLs de los archivos en GitHub (REEMPLAZA ESTAS CON LAS CORRECTAS)
 url_resultado1 = "https://raw.githubusercontent.com/juancarton/cincomil/main/resultado1.xlsx"
